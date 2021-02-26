@@ -1,0 +1,16 @@
+﻿@model BasicItem
+@if (Model == null)
+{
+    <h2>Item not found.</h2>
+}
+else
+{
+    <div class="form-group">
+        @Html.LabelFor(item => item.Name)
+        @Html.TextBoxFor(item => item.Name, new { @class = "form-control" })
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(item => item.Description)
+        @Html.TextBoxFor(item => item.Description, new { @class = "form-control" })
+    </div>
+}

@@ -1,0 +1,70 @@
+﻿@page "/referencedata/definition"
+@using TransactionProcessor.Entities
+@inject HttpClient Http
+@inject IApplicationConfiguration config
+@inject IUriHelper UriHelper
+
+<div class="card">
+    <div class="card-header h2">
+        <navlink class="btn btn-primary" href="/referencedata/definition/add"><span class="oi oi-plus"></span> Add</navlink>
+        Manage Reference Data Definitions
+    </div>
+    <div class="card-body">
+        @if (loading)
+        {
+            <loading />
+        }
+        else
+        {
+            <div class="list-group">
+                <div class="list-group-item">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-3">Name</div>
+                            <div class="col">Description</div>
+                            <div class="col-1"></div>
+                        </div>
+                    </div>
+                </div>
+                @if (referenceDataDefinitions?.Any() == true)
+                {
+                    @foreach (var referenceDataDefinition in referenceDataDefinitions)
+                    {
+
+                        <a onclick="@(() => Detail(referenceDataDefinition))" class="list-group-item list-group-item-action">
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col-3">@referenceDataDefinition.Name</div>
+                                    <div class="col">@referenceDataDefinition.Description</div>
+                                    <div class="col-1"><icon name="chevron-right"></icon></div>
+                                </div>
+                            </div>
+                        </a>
+                    }
+                }
+                else
+                {
+                    <NoItems />
+                }
+            </div>
+        }
+
+    </div>
+</div>
+
+@functions {
+    private bool loading = true;
+
+    private ReferenceDataDefinition[] referenceDataDefinitions = new ReferenceDataDefinition[] { };
+
+    protected override async Task OnInitAsync()
+    {
+        referenceDataDefinitions = await Http.GetJsonAsync<ReferenceDataDefinition[]>($"{config.ApiUrl}/referencedata/definition");
+        loading = false;
+    }
+
+    private void Detail(ReferenceDataDefinition referenceDataDefinition)
+    {
+        UriHelper.NavigateTo($"/referencedata/definition/{referenceDataDefinition.Id}");
+    }
+}

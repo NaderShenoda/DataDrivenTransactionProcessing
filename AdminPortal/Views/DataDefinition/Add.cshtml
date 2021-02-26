@@ -1,0 +1,24 @@
+﻿@model BasicItem
+
+@section subheader
+{
+    <h1>
+        @Html.DisplayBackButton(Url.Action(nameof(DataDefinitionController.Index)))
+        Add Data Definition
+    </h1>
+}
+
+<div class="card">
+    <div class="card-header">
+        Item Detail
+    </div>
+    <div class="card-body">
+        @Html.DisplayForModel()
+    </div>
+    <div class="card-footer">
+        @Html.BeginForm()
+        @Html.HiddenFor(item => item.Id)
+        <button class="btn btn-danger" type="submit">@Html.DisplayFor(_ => deleteIcon) Delete</button>
+        @Html.BeginForm()
+    </div>
+</div>

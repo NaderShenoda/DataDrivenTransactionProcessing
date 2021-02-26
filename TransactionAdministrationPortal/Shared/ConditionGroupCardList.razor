@@ -1,0 +1,83 @@
+﻿@using TransactionProcessor.Entities.Condition
+@if (ConditionGroups?.Any() == true)
+{
+    <div class="list-group">
+        @foreach (var ConditionGroup in ConditionGroups ?? Enumerable.Empty<ConditionGroup>())
+        {
+        <div class="list-group-item">
+            <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <Icon Name="plus"></Icon> Add
+            </button>
+            <div class="dropdown-menu">
+                <button type="button" class="dropdown-item" onclick="@(() => addCondition(ConditionGroup))">
+                    Condition
+                </button>
+                <button type="button" class="dropdown-item" onclick="@(() => addConditionGroup(ConditionGroup))">
+                    Condition Group
+                </button>
+            </div>
+            @if (ConditionGroup.Order != 0)
+            {
+                <div class="form-group form-inline">
+                    <select>
+                        <option value="false">and</option>
+                        <option value="true">or</option>
+                        <option value="false">and not</option>
+                        <option value="true">or not</option>
+                    </select>
+                </div>
+            }
+            <ConditionGroupCard ConditionGroup="@ConditionGroup" />
+            <div class="btn-group dropleft">
+                <button type="button" class="btn btn-light dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
+                <div class="dropdown-menu">
+                    <button type="button" class="dropdown-item" onclick="@(() => RemoveConditionGroup(ConditionGroup))">
+                        <icon Name="trash"></icon> Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+        }
+    </div>
+}
+
+
+@functions {
+
+    [Parameter]
+    public ICollection<ConditionGroup> ConditionGroups { get; set; }
+
+    public void RemoveConditionGroup(ConditionGroup conditionGroup)
+    {
+        ConditionGroups.Remove(conditionGroup);
+    }
+
+    private void addCondition(ConditionGroup conditionGroup)
+    {
+        conditionGroup.Conditions.Add(new Condition { Or = false, Not = false, Order = nextConditionOrder(conditionGroup), DataType = "Text" });
+    }
+
+    private void addConditionGroup(ConditionGroup conditionGroup)
+    {
+        conditionGroup.ChildrenGroups.Add(new ConditionGroup { Or = false, Not = false, Order = nextConditionGroupOrder(conditionGroup), ChildrenGroups = new List<ConditionGroup>() });
+    }
+
+    private int nextConditionOrder(ConditionGroup conditionGroup)
+    {
+        if (conditionGroup.Conditions.Any())
+        {
+            return conditionGroup.Conditions.Max(c => c.Order) + 1;
+        }
+        return 0;
+    }
+
+    private int nextConditionGroupOrder(ConditionGroup conditionGroup)
+    {
+        if (conditionGroup.ChildrenGroups.Any())
+        {
+            return conditionGroup.ChildrenGroups.Max(c => c.Order) + 1;
+        }
+        return 0;
+    }
+
+}

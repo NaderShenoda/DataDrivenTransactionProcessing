@@ -1,0 +1,69 @@
+﻿@page "/datadefinition/add"
+@using AdminPortal.Entities
+@inject HttpClient Http
+@inject IApplicationConfiguration config
+@inject IUriHelper UriHelper
+
+<div class="card">
+    <div class="card-header">
+        <h1>
+            <button class="btn btn-light" onclick="@Back"><Icon IconName="@IconName.chevron_left"></Icon> Back</button>
+            Add Data Definition
+        </h1>
+    </div>
+    @if (loading)
+    {
+        <div class="card-body">
+            <loading></loading>
+        </div>
+    }
+    else if (dataDefinition == null)
+    {
+        <div class="card-body h2">
+            Data definition not found.
+        </div>
+    }
+    else
+    {
+        <EditForm Model="@dataDefinition" OnValidSubmit="@Save">
+            <div class="card-body">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <InputText class="form-control" id="name" bind-Value="@dataDefinition.Name" />
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <InputTextArea class="form-control" id="description" bind-Value="@dataDefinition.Description" />
+                </div>
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-primary" type="submit">Save</button>
+            </div>
+        </EditForm>
+    }
+</div>
+
+@functions {
+    [Parameter]
+    public long Id { get; set; }
+
+    private bool loading = true;
+
+    private DataDefinition dataDefinition = new DataDefinition();
+
+    protected override async Task OnInitAsync()
+    {
+        loading = false;
+    }
+
+    private void Back()
+        => UriHelper.NavigateTo($"/datadefinition");
+
+    private async Task Save()
+    {
+        await Http.SendJsonAsync(HttpMethod.Post, $"{config.ApiUrl}/datadefinition", dataDefinition);
+        UriHelper.NavigateTo($"/datadefinition");
+    }
+}

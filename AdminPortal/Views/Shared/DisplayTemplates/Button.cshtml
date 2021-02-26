@@ -1,0 +1,4 @@
+﻿@model AdminPortal.Models.Button
+<a class="btn btn-@Model.Style.ToString().ToLower()" href="@Model.UrlAction">
+    @Html.DisplayIcon(Model.Icon) @Model.Text
+</a>

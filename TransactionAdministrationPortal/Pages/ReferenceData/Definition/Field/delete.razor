@@ -1,0 +1,63 @@
+﻿@page "/referencedata/definition/{masterid:long}/field/{id:long}/delete"
+@using TransactionProcessor.Entities
+@inject HttpClient Http
+@inject IApplicationConfiguration config
+@inject IUriHelper UriHelper
+
+<div class="card">
+    <div class="card-header h2">
+        <button class="btn btn-light" onclick="@Back"><span class="oi oi-chevron-left"></span> Back</button>
+        Delete Reference Data Field
+    </div>
+    <div class="card-body">
+        @if (loading)
+        {
+            <loading />
+        }
+        else if (referenceDataFieldDefinition == null)
+        {
+            <notfound />
+        }
+        else
+        {
+            <dl class="row">
+                <dt class="col-2">Name:</dt>
+                <dd class="col-10">@referenceDataFieldDefinition.Name</dd>
+                <dt class="col-2">Description:</dt>
+                <dd class="col-10">@referenceDataFieldDefinition.Description</dd>
+            </dl>
+        }
+    </div>
+    <div class="card-footer">
+        <button class="btn btn-danger" onclick="@Delete"><span class="oi oi-trash"></span> Confirm Delete</button>
+    </div>
+</div>
+
+@functions {
+    private ReferenceDataFieldDefinition referenceDataFieldDefinition { get; set; } = new ReferenceDataFieldDefinition();
+    private bool loading = true;
+    private string ReturnPath { get => $"/referencedata/definition/{masterid}"; }
+
+    [Parameter]
+    private long id { get; set; }
+
+    [Parameter]
+    private long masterid { get; set; }
+
+    protected override async Task OnInitAsync()
+    {
+        referenceDataFieldDefinition = await Http.GetJsonAsync<ReferenceDataFieldDefinition>($"{config.ApiUrl}/referencedata/definition/field/{id}");
+        loading = false;
+    }
+
+    private async Task Delete()
+    {
+        var result = await Http.DeleteAsync($"{config.ApiUrl}/referencedata/definition/field/{id}");
+        Back();
+    }
+
+    private void Back()
+    {
+        UriHelper.NavigateTo(ReturnPath);
+    }
+}

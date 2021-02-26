@@ -1,0 +1,50 @@
+﻿@page "/referencedata/definition/add"
+@using TransactionProcessor.Entities
+@inject HttpClient Http
+@inject IApplicationConfiguration config
+@inject IUriHelper UriHelper
+
+<div class="card">
+    <div class="card-header h2">
+        <button class="btn btn-light" onclick="@Back"><span class="oi oi-chevron-left"></span> Back</button>
+        Add Reference Data Definition
+    </div>
+    <EditForm Model="@referenceDataDefinition" OnValidSubmit="@HandleValidSubmit">
+        <div class="card-body">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <div class="form-group">
+                <label for="name">Name</label>
+                <InputText class="form-control" id="name" bind-Value="@referenceDataDefinition.Name" />
+            </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <InputTextArea class="form-control" id="description" bind-Value="@referenceDataDefinition.Description" />
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit">Submit</button>
+        </div>
+    </EditForm>
+</div>
+
+<Content>
+    <ReferenceDataDefinitionForm ReferenceDataDefinition="@referenceDataDefinition" OnValidSubmit="@(async () => HandleValidSubmit())"></ReferenceDataDefinitionForm>
+</Content>
+
+@functions {
+    private string ReturnPath = "/referencedata/definition";
+
+    private ReferenceDataDefinition referenceDataDefinition = new ReferenceDataDefinition();
+
+    private async Task HandleValidSubmit()
+    {
+        var result = await Http.SendJsonAsync<DataDefinition>(HttpMethod.Post, $"{config.ApiUrl}/referencedata/definition", referenceDataDefinition);
+        UriHelper.NavigateTo($"/referencedata/definition/{result.Id}");
+    }
+
+    private void Back()
+    {
+        UriHelper.NavigateTo(ReturnPath);
+    }
+}

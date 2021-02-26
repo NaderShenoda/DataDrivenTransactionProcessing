@@ -1,0 +1,83 @@
+﻿@using TransactionProcessor.Entities.Condition
+
+    <div class="form-group form-inline">
+        @if (Condition.Order != 0 || HasSiblings)
+        {
+            <select class="form-control mr-3">
+                <option value="false">and</option>
+                <option value="true">or</option>
+                <option value="false">and not</option>
+                <option value="true">or not</option>
+            </select>
+        }
+        <select class="form-control mr-3">
+            <option value="field">Field</option>
+        </select>
+        <span class="mr-3">as</span>
+        <select bind="@Condition.DataType" class="form-control mr-3">
+            @foreach (var dataType in DataTypes)
+            {
+                <option value="@dataType">@dataType</option>
+            }
+        </select>
+        @if (Condition.DataType != "Text")
+        {
+            <span class="mr-3">formatted like </span>
+                <input type="text" bind="@Condition.LeftFormatInformation" class="form-control mr-3"/>
+        }
+        <select bind="@Condition.OperatorType" class="form-control mr-3">
+            @foreach (var op in Operators)
+            {
+                <option value="@op">@op</option>
+            }
+        </select>
+        <select class="form-control mr-3">
+            <option value="field">Field</option>
+        </select>
+        @if (Condition.DataType != "Text")
+        {
+            <span class="mr-3">formatted like</span>
+            <input type="text" bind="@Condition.RightFormatInformation" class="form-control mr-3" />
+        }
+        <div class="btn-group dropleft">
+            <button type="button" class="btn btn-light dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
+            <div class="dropdown-menu">
+                <button type="button" class="dropdown-item" onclick="@(() => RemoveConditionClick(Condition))">
+                    <icon Name="trash"></icon> Delete Condition
+                </button>
+            </div>
+        </div>
+    </div>
+
+@functions {
+    [Parameter]
+    public Condition Condition { get; set; }
+
+    [Parameter]
+    public bool HasSiblings { get; set; } = false;
+
+    [Parameter]
+    public Action<Condition> RemoveConditionClick { get; set; }
+
+        public string[] DataTypes { get; set; } = new[]
+    {
+        "Text",
+        "True or False",
+        "Date and/or Time",
+        "Guid",
+        "Number",
+        "Span of Time"
+    };
+
+    public string[] Operators { get; set; } = new[]
+    {
+        "equals",
+        "does not equal",
+        "is less than",
+        "is greater than",
+        "is less than or equal to",
+        "is greater than or equal to",
+        "is in list of",
+        "matches regular expression"
+    };
+}

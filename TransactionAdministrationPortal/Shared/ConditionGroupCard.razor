@@ -1,0 +1,16 @@
+﻿@using TransactionProcessor.Entities.Condition
+    @if (ConditionGroup?.ChildrenGroups?.Any() == true)
+    {
+        <ConditionGroupCardList ConditionGroups="@ConditionGroup.ChildrenGroups" />
+    }
+    @if (ConditionGroup.Conditions?.Any() == true)
+    {
+        <ConditionCardList Conditions="@ConditionGroup.Conditions" HasSiblings="@hasSiblings" />
+    }
+    @functions {
+
+        [Parameter]
+        public ConditionGroup ConditionGroup { get; set; }
+
+        private bool hasSiblings { get => ConditionGroup?.ChildrenGroups?.Any() == true; }
+    }

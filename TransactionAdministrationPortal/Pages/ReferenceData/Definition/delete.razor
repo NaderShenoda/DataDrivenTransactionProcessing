@@ -1,0 +1,60 @@
+﻿@page "/referencedata/definition/{id:long}/delete"
+@using TransactionProcessor.Entities
+@inject HttpClient Http
+@inject IApplicationConfiguration config
+@inject IUriHelper UriHelper
+
+<div class="card">
+    <div class="card-header h2">
+        <button class="btn btn-light" onclick="@Back"><span class="oi oi-chevron-left"></span> Back</button>
+        Delete Reference Data
+    </div>
+    <div class="card-body">
+        @if (loading)
+        {
+            <loading />
+        }
+        else if (referenceDataDefinition == null)
+        {
+            <notfound />
+        }
+        else
+        {
+            <dl class="row">
+                <dt class="col-2">Name:</dt>
+                <dd class="col-10">@referenceDataDefinition.Name</dd>
+                <dt class="col-2">Description:</dt>
+                <dd class="col-10">@referenceDataDefinition.Description</dd>
+            </dl>
+        }
+    </div>
+    <div class="card-footer">
+        <button class="btn btn-danger" onclick="@Delete"><span class="oi oi-trash"></span> Confirm Delete</button>
+    </div>
+</div>
+
+@functions {
+    private ReferenceDataDefinition referenceDataDefinition;
+    private bool loading = true;
+    private string ReturnPath { get => $"/referencedata/definition/{id}"; }
+
+    [Parameter]
+    private long id { get; set; }
+
+    protected override async Task OnInitAsync()
+    {
+        referenceDataDefinition = await Http.GetJsonAsync<ReferenceDataDefinition>($"{config.ApiUrl}/referencedata/definition/{id}");
+        loading = false;
+    }
+
+    private async Task Delete()
+    {
+        var result = await Http.DeleteAsync($"{config.ApiUrl}/referencedata/definition/{id}");
+        UriHelper.NavigateTo("/referencedata/definition");
+    }
+
+    private void Back()
+    {
+        UriHelper.NavigateTo(ReturnPath);
+    }
+}

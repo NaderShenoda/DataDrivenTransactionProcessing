@@ -1,0 +1,76 @@
+﻿@page "/datadefinition/{masterid:long}/delete/{id:long}"
+@using TransactionProcessor.Entities
+@inject HttpClient Http
+@inject IApplicationConfiguration config
+@inject IUriHelper UriHelper
+
+<div class="card">
+    <div class="card-header h1">
+        <button class="btn btn-light" onclick="@Back"><span class="oi oi-chevron-left"></span> Back</button>
+        Delete Data Definition
+    </div>
+    <div class="card-body">
+        @if (loading)
+        {
+            <loading></loading>
+        }
+        else
+        {
+            @if (dataDefinition == null)
+            {
+                <notfound />
+            }
+            else
+            {
+                <div class="row">
+                    <div class="col">
+                        @dataDefinition.Name
+                        <muted>@dataDefinition.Description</muted>
+                        @if (dataDefinition.IsArray)
+                        {
+                            <Pill Name="primary">One or More</Pill>
+                        }
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col ml-5">
+                        <DataDefinitionList DataDefinition="@dataDefinition" DataDefinitions="@dataDefinitions" />
+                    </div>
+                </div>
+            }
+        }
+    </div>
+    <div class="card-footer">
+        <button class="btn btn-danger" onclick="@Delete"><span class="oi oi-trash"></span> Confirm Delete?</button>
+    </div>
+</div>
+@functions {
+    private DataDefinition dataDefinition { get; set; } = new DataDefinition();
+    private IEnumerable<DataDefinition> dataDefinitions = Enumerable.Empty<DataDefinition>();
+    private bool loading = true;
+    private string ReturnPath { get => (masterid == id) ? "/datadefinition" : $"/datadefinition/{masterid}"; }
+
+    [Parameter]
+    private long id { get; set; }
+
+    [Parameter]
+    private long masterid { get; set; }
+
+    protected override async Task OnInitAsync()
+    {
+        dataDefinitions = await Http.GetJsonAsync<IEnumerable<DataDefinition>>($"{config.ApiUrl}/datadefinition/{masterid}/master");
+        dataDefinition = dataDefinitions.FirstOrDefault(definition => definition.Id == id);
+        loading = false;
+    }
+
+    private async Task Delete()
+    {
+        var result = await Http.DeleteAsync($"{config.ApiUrl}/datadefinition/{id}");
+        Back();
+    }
+
+    private void Back()
+    {
+        UriHelper.NavigateTo(ReturnPath);
+    }
+}

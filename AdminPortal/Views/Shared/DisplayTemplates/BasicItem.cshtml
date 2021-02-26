@@ -1,0 +1,14 @@
+﻿@model BasicItem
+@if (Model == null)
+{
+    <h2>Item not found.</h2>
+}
+else
+{
+    <dl class="row">
+        <dt class="col-2">Name:</dt>
+        <dd class="col-10">@Model.Name</dd>
+        <dt class="col-2">Description:</dt>
+        <dd class="col-10">@Model.Description</dd>
+    </dl>
+}

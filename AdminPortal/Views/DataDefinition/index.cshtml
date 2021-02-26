@@ -1,0 +1,11 @@
+﻿@model BasicTable
+
+@section subheader
+{
+    <h1>
+        @Html.DisplayAddButton(Url.Action(nameof(DataDefinitionController.Add)))
+        Data Definition
+    </h1>
+}
+
+@Html.DisplayForModel()

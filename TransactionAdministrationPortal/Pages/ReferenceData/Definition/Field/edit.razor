@@ -1,0 +1,67 @@
+﻿@page "/referencedata/definition/{masterid:long}/field/{id:long}/edit"
+@using TransactionProcessor.Entities
+@inject HttpClient Http
+@inject IApplicationConfiguration config
+@inject IUriHelper UriHelper
+
+<div class="card">
+    <div class="card-header h3">
+        <button class="btn btn-light" onclick="@Back"><span class="oi oi-chevron-left"></span> Back</button>
+        Edit Reference Data Field
+    </div>
+    @if (loading)
+    {
+        <div class="card-body">
+            <loading />
+        </div>
+    }
+    else
+    {
+        <EditForm Model="@referenceDataFieldDefinition" OnValidSubmit="@HandleValidSubmit">
+            <div class="card-body">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <InputText class="form-control" id="name" bind-Value="@referenceDataFieldDefinition.Name" />
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <InputTextArea class="form-control" id="description" bind-Value="@referenceDataFieldDefinition.Description" />
+                </div>
+            </div>
+            <div class="card-footer">
+                <button type="submit">Submit</button>
+            </div>
+        </EditForm>
+    }
+</div>
+
+@functions {
+    private ReferenceDataFieldDefinition referenceDataFieldDefinition { get; set; } = new ReferenceDataFieldDefinition();
+    private bool loading = true;
+    private string ReturnPath { get => $"/referencedata/definition/{masterid}"; }
+
+    [Parameter]
+    private long id { get; set; }
+
+    [Parameter]
+    private long masterid { get; set; }
+
+    protected override async Task OnInitAsync()
+    {
+        referenceDataFieldDefinition = await Http.GetJsonAsync<ReferenceDataFieldDefinition>($"{config.ApiUrl}/referencedata/definition/field/{id}");
+        loading = false;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        var result = await Http.SendJsonAsync<ReferenceDataFieldDefinition>(HttpMethod.Put, $"{config.ApiUrl}/referencedata/definition/field/{id}", referenceDataFieldDefinition);
+        Back();
+    }
+
+    private void Back()
+    {
+        UriHelper.NavigateTo(ReturnPath);
+    }
+}

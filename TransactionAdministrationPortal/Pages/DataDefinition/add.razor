@@ -1,0 +1,51 @@
+﻿@page "/datadefinition/add"
+@using TransactionProcessor.Entities
+@inject HttpClient Http
+@inject IApplicationConfiguration config
+@inject IUriHelper UriHelper
+
+<div class="card">
+    <div class="card-header h1">
+        <button class="btn btn-light" onclick="@Back"><span class="oi oi-chevron-left"></span> Back</button>
+        Add Data Definition
+    </div>
+    <EditForm Model="@dataDefinition" OnValidSubmit="@HandleValidSubmit">
+        <div class="card-body">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <div class="form-group">
+                <label for="name">Name</label>
+                <InputText class="form-control" id="name" bind-Value="@dataDefinition.Name" />
+            </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <InputTextArea class="form-control" id="description" bind-Value="@dataDefinition.Description" />
+            </div>
+            <div class="form-group form-check">
+                <label for="isarray">Can have many?</label>
+                <InputCheckbox class="form-control" id="isarray" bind-Value="@dataDefinition.IsArray" />
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit">Submit</button>
+        </div>
+    </EditForm>
+</div>
+
+
+@functions {
+    private string ReturnPath = "/datadefinition";
+
+    private DataDefinition dataDefinition = new DataDefinition();
+
+    private async Task HandleValidSubmit()
+    {
+        var result = await Http.SendJsonAsync<DataDefinition>(HttpMethod.Post, $"{config.ApiUrl}/datadefinition", dataDefinition);
+        UriHelper.NavigateTo($"/datadefinition/{result.Id}");
+    }
+
+    private void Back()
+    {
+        UriHelper.NavigateTo(ReturnPath);
+    }
+}

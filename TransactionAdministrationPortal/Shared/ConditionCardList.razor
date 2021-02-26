@@ -1,0 +1,26 @@
+﻿@using TransactionProcessor.Entities.Condition
+
+@if (Conditions.Any())
+{
+    <div class="list-group">
+        @foreach (var condition in Conditions ?? Enumerable.Empty<Condition>())
+        {
+            <div class="list-group-item">
+                <ConditionCard Condition="@condition" HasSiblings="@HasSiblings" RemoveConditionClick="@RemoveCondition" />
+            </div>
+        }
+    </div>
+}
+
+@functions {
+    [Parameter]
+    public ICollection<Condition> Conditions { get; set; }
+
+    [Parameter]
+    public bool HasSiblings { get; set; } = false;
+
+    public void RemoveCondition(Condition condition)
+    {
+        Conditions.Remove(condition);
+    }
+}

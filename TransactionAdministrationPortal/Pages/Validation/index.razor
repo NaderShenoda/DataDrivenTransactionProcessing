@@ -1,0 +1,71 @@
+﻿@page "/validation"
+@using TransactionProcessor.Entities
+@inject HttpClient Http
+@inject IApplicationConfiguration config
+@inject IUriHelper UriHelper
+
+<div class="card">
+    <div class="card-header h2">
+        Manage Validation
+    </div>
+    <div class="card-body">
+        <div class="list-group">
+            <div class="list-group-item">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-3">Name</div>
+                        <div class="col">Description</div>
+                        <div class="col-1"></div>
+                    </div>
+                </div>
+            </div>
+            @if (loading)
+            {
+                <loading />
+            }
+            else if (dataDefinitions?.Any() == true)
+            {
+                @foreach (var dataDefinition in dataDefinitions)
+                {
+
+                    <a onclick="@(() => Detail(dataDefinition))" class="list-group-item list-group-item-action">
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-3">@dataDefinition.Name</div>
+                                <div class="col">@dataDefinition.Description</div>
+                                <div class="col-1"><icon name="chevron-right"></icon></div>
+                            </div>
+                        </div>
+                    </a>
+                }
+            }
+            else
+            {
+                <NoItems />
+            }
+        </div>
+    </div>
+</div>
+
+@functions {
+
+    private DataDefinition[] dataDefinitions;
+    private bool loading = true;
+    protected override async Task OnInitAsync()
+    {
+        dataDefinitions = await Http.GetJsonAsync<DataDefinition[]>($"{config.ApiUrl}/datadefinition/master");
+        loading = false;
+    }
+
+    private void Detail(DataDefinition dataDefinition)
+    {
+        UriHelper.NavigateTo($"/validation/{dataDefinition.Id}");
+    }
+
+    private IEnumerable<KeyValuePair<string, string>> HeaderFields { get; } = new[]
+    {
+            new KeyValuePair<string, string>("Name", "col-3"),
+            new KeyValuePair<string, string>("Description", "col"),
+            new KeyValuePair<string, string>("", "col-1"),
+        };
+}

@@ -1,0 +1,113 @@
+﻿@page "/datadefinition/{Id:long}"
+@using AdminPortal.Entities
+@inject HttpClient Http
+@inject IApplicationConfiguration config
+@inject IUriHelper UriHelper
+
+<div class="card">
+    <div class="card-header">
+        <h1>
+            <button class="btn btn-light" onclick="@Back"><Icon IconName="@IconName.chevron_left"></Icon> Back</button>
+            Data Definition Details
+        </h1>
+    </div>
+    @if (dataDefinitionLoading)
+    {
+        <div class="card-body">
+            <loading></loading>
+        </div>
+    }
+    else if (dataDefinition == null)
+    {
+        <div class="card-body h2">
+            Definition not found.
+        </div>
+    }
+    else
+    {
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-2">Name</dt>
+                <dd class="col-10">@dataDefinition.Name</dd>
+                <dt class="col-2">Description</dt>
+                <dd class="col-10">@dataDefinition.Description</dd>
+            </dl>
+        </div>
+        <div class="card-footer">
+            <button class="btn btn-primary" onclick="@Edit"><Icon IconName="@IconName.pencil"></Icon> Edit</button>
+            <button class="btn btn-danger" onclick="@Delete"><Icon IconName="@IconName.trash"></Icon> Delete</button>
+        </div>
+    }
+</div>
+<div class="card mt-3">
+    <div class="card-header">
+        <h1>
+            <button class="btn btn-primary" onclick="@AddField"><Icon IconName="@IconName.plus"></Icon> Add</button>
+            Manage Data Field Definitions
+        </h1>
+    </div>
+    <div class="card-body">
+        @if (dataFieldDefinitionsLoading)
+        {
+            <loading />
+        }
+        else if (dataFieldDefinitions?.Any() == true)
+        {
+            @foreach (var dataFieldDefinition in dataFieldDefinitions ?? Enumerable.Empty<AdminPortal.Entities.DataFieldDefinition>())
+            {
+
+            }
+        }
+        else
+        {
+            <div class="d-flex justify-content-center">
+                <div class="h2">
+                    No items to display.
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@functions {
+    [Parameter]
+    public long Id { get; set; }
+
+    private bool dataDefinitionLoading = true;
+    private bool dataFieldDefinitionsLoading = true;
+
+    private AdminPortal.Entities.DataDefinition dataDefinition;
+    private AdminPortal.Entities.DataFieldDefinition[] dataFieldDefinitions;
+
+    protected override async Task OnInitAsync()
+    {
+        await Task.WhenAll(new[] { LoadDataFieldDefinitions(), LoadDataDefinition() });
+    }
+
+    protected async Task LoadDataDefinition()
+    {
+        dataDefinition = await Http.GetJsonAsync<AdminPortal.Entities.DataDefinition>($"{config.ApiUrl}/datadefinition/{Id}");
+        dataDefinitionLoading = false;
+    }
+
+    protected async Task LoadDataFieldDefinitions()
+    {
+        dataFieldDefinitions = await Http.GetJsonAsync<AdminPortal.Entities.DataFieldDefinition[]>($"{config.ApiUrl}/datadefinition/{Id}/datafielddefinition");
+        dataFieldDefinitionsLoading = false;
+    }
+
+    private void Back()
+        => UriHelper.NavigateTo($"/datadefinition");
+
+    private void Edit()
+        => UriHelper.NavigateTo($"/datadefinition/{Id}/edit");
+
+    private void Delete()
+        => UriHelper.NavigateTo($"/datadefinition/{Id}/delete");
+
+    private void FieldDetail(AdminPortal.Entities.DataFieldDefinition field)
+        => UriHelper.NavigateTo($"/datadefinition/{Id}/datafielddefinition/{field.Id}");
+
+    private void AddField()
+        => UriHelper.NavigateTo($"/datadefinition/{Id}/datafielddefinition/add");
+}

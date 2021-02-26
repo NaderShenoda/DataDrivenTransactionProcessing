@@ -1,0 +1,74 @@
+﻿@page "/datadefinition/{dataDefinitionId:long}/datafielddefinition/{Id:long}"
+@using AdminPortal.Entities
+@inject HttpClient Http
+@inject IApplicationConfiguration config
+@inject IUriHelper UriHelper
+
+<div class="card">
+    <div class="card-header">
+        <h1>
+            <button class="btn btn-light" onclick="@Back"><Icon IconName="@IconName.chevron_left"></Icon> Back</button>
+            Data Field Definition Details
+        </h1>
+    </div>
+    @if (loading)
+    {
+        <div class="card-body">
+            <loading></loading>
+        </div>
+    }
+    else if (dataFieldDefinition == null)
+    {
+        <div class="card-body h2">
+            Data field definition not found.
+        </div>
+    }
+    else
+    {
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-2">Name</dt>
+                <dd class="col-10">@dataFieldDefinition.Name</dd>
+                <dt class="col-2">Description</dt>
+                <dd class="col-10">@dataFieldDefinition.Description</dd>
+                <dt class="col-2">Can have one or more?</dt>
+                <dd class="col-10">
+                @if (dataFieldDefinition.IsArray)
+                {
+                    <Icon IconName="@IconName.check"></Icon>
+                }
+                </dd>
+            </dl>
+        </div>
+        <div class="card-footer">
+            <button class="btn btn-primary" onclick="@Edit"><Icon IconName="@IconName.pencil"></Icon> Edit</button>
+            <button class="btn btn-danger" onclick="@Delete"><Icon IconName="@IconName.trash"></Icon> Delete</button>
+        </div>
+    }
+</div>
+@functions {
+    [Parameter]
+    public long Id { get; set; }
+
+    [Parameter]
+    public long dataDefinitionId { get; set; }
+
+    private bool loading = true;
+
+    private DataFieldDefinition dataFieldDefinition;
+
+    protected override async Task OnInitAsync()
+    {
+        dataFieldDefinition = await Http.GetJsonAsync<DataFieldDefinition>($"{config.ApiUrl}/datadefinition/{dataDefinitionId}/datafielddefinition/{Id}");
+        loading = false;
+    }
+
+    private void Back()
+        => UriHelper.NavigateTo($"/datadefinition{dataDefinitionId}");
+
+    private void Edit()
+        => UriHelper.NavigateTo($"/datadefinition/{dataDefinitionId}/datafielddefinition/{Id}/edit");
+
+    private void Delete()
+        => UriHelper.NavigateTo($"/datadefinition/{dataDefinitionId}/datafielddefinition/{Id}/delete");
+}

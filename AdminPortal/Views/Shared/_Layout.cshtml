@@ -1,0 +1,64 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TransactionAdministrationPortal</title>
+    <base href="/" />
+    <link href="css/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/open-iconic/font/css/open-iconic-bootstrap.min.css" rel="stylesheet" />
+    <link href="css/tree.css" rel="stylesheet" />
+    <link href="css/site.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="app">
+        <div class="sidebar">
+            <div class="top-row pl-4 navbar navbar-expand-lg navbar-dark">
+                <a class="navbar-brand" href="#">Transaction Administration</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </div>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav flex-column">
+                    <li class="nav-item px-3">
+                        <a class="nav-link" href="@Url.Action("index", "home")">
+                            <span class="oi oi-home"></span> Home
+                        </a>
+                    </li>
+                    <li class="nav-item px-3">
+                        <a class="nav-link" href="@Url.Action("index", "datadefinition")">
+                            <span class="oi oi-list-rich"></span>
+                            Data Definition
+                        </a>
+                    </li>
+                    <li class="nav-item px-3">
+                        <a class="nav-link" href="@Url.Action("index", "referencedata")">
+                            <span class="oi oi-spreadsheet"></span>
+                            Reference Data
+                        </a>
+                    </li>
+                    <li class="nav-item px-3">
+                        <a class="nav-link" href="@Url.Action("index", "validation")">
+                            <span class="oi oi-check"></span>
+                            Validation
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="main">
+            <div class="top-row px-4">
+                @RenderSection("subheader", required: false)
+            </div>
+            <div class="content px-4">
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+    <script src="css/jquery/jquery-3.4.1.min.js"></script>
+    <script src="css/popper/umd/popper.min.js"></script>
+    <script src="css/bootstrap/js/bootstrap.min.js"></script>
+    @RenderSection("scripts", required: false)
+</body>
+</html>

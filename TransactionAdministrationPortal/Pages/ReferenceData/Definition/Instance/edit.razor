@@ -1,0 +1,80 @@
+﻿@page "/referencedata/definition/{masterId:long}/instance/{id:long}/edit"
+@using TransactionProcessor.Entities
+@inject HttpClient Http
+@inject IApplicationConfiguration config
+@inject IUriHelper UriHelper
+
+<div class="card">
+    <div class="card-header h2">
+        <button class="btn btn-light" onclick="@Back"><span class="oi oi-chevron-left"></span> Back</button>
+        Edit Reference Data
+    </div>
+    @if (loading)
+    {
+        <div class="card-body">
+            <loading />
+        </div>
+    }
+    else
+    {
+        <EditForm Model="@referenceDataDefinition" OnValidSubmit="@HandleValidSubmit">
+            <div class="card-body">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                @foreach (var field in referenceDataInstance?.ReferenceDataDefinition?.ReferenceDataFieldDefinitions ?? Enumerable.Empty<ReferenceDataFieldDefinition>())
+                {
+                    <div class="form-group">
+                        <label for="@field.Id.ToString()">@field.Name</label>
+                        <InputText class="form-control" id="@field.Id.ToString()" bind-Value="@referenceDataInstance.ReferenceDataFieldInstances.Single(fieldInstance => fieldInstance.ReferenceDataFieldDefinitionId == field.Id).Value" />
+                    </div>
+                }
+            </div>
+            <div class="card-footer">
+                <button type="submit">Submit</button>
+            </div>
+        </EditForm>
+    }
+</div>
+
+@functions {
+    [Parameter]
+    public long id { get; set; }
+
+    [Parameter]
+    public long masterId { get; set; }
+
+    private string ReturnPath { get => $"/referencedata/definition/{masterId}"; }
+
+    private bool loading = true;
+
+    private ReferenceDataDefinition referenceDataDefinition = new ReferenceDataDefinition();
+    private ReferenceDataFieldDefinition[] referenceDataFieldDefinitions = new ReferenceDataFieldDefinition[] { };
+    private ReferenceDataInstance referenceDataInstance = new ReferenceDataInstance();
+    private ReferenceDataFieldInstance[] referenceDataFieldInstances = new ReferenceDataFieldInstance[] { };
+
+    protected override async Task OnInitAsync()
+    {
+        referenceDataDefinition = await Http.GetJsonAsync<ReferenceDataDefinition>($"{config.ApiUrl}/referencedata/definition/{masterId}");
+        referenceDataFieldDefinitions = await Http.GetJsonAsync<ReferenceDataFieldDefinition[]>($"{config.ApiUrl}/referencedata/definition/{masterId}/field");
+        referenceDataInstance = await Http.GetJsonAsync<ReferenceDataInstance>($"{config.ApiUrl}/referencedata/definition/{masterId}/instance/{id}");
+        referenceDataFieldInstances = await Http.GetJsonAsync<ReferenceDataFieldInstance[]>($"{config.ApiUrl}/referencedata/definition/{masterId}/instance/{id}/field");
+        referenceDataDefinition.ReferenceDataFieldDefinitions = referenceDataFieldDefinitions.ToList();
+        referenceDataInstance.ReferenceDataDefinition = referenceDataDefinition;
+        referenceDataInstance.ReferenceDataDefinitionId = referenceDataDefinition.Id;
+        referenceDataInstance.ReferenceDataFieldInstances = referenceDataFieldInstances.ToList();
+        loading = false;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        referenceDataInstance.ReferenceDataDefinition = null;
+        referenceDataInstance.ReferenceDataFieldInstances = referenceDataInstance.ReferenceDataFieldInstances.Select(field => new ReferenceDataFieldInstance { ReferenceDataFieldDefinitionId = field.ReferenceDataFieldDefinitionId, Value = field.Value, Id = field.Id }).ToList();
+        var result = await Http.SendJsonAsync<DataDefinition>(HttpMethod.Put, $"{config.ApiUrl}/referencedata/instance/{id}", referenceDataInstance);
+        Back();
+    }
+
+    private void Back()
+    {
+        UriHelper.NavigateTo(ReturnPath);
+    }
+}

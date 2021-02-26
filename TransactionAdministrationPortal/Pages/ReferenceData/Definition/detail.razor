@@ -1,0 +1,218 @@
+﻿@page "/referencedata/definition/{id:long}"
+@using TransactionProcessor.Entities
+@inject HttpClient Http
+@inject IApplicationConfiguration config
+@inject IUriHelper UriHelper
+
+<div class="card">
+    <div class="card-header h2">
+        <button class="btn btn-light" onclick="@Back"><span class="oi oi-chevron-left"></span> Back</button>
+        Reference Data Definition Details
+    </div>
+    <div class="card-body">
+        @if (loading)
+        {
+            <loading />
+        }
+        else if (referenceDataDefinition == null)
+        {
+            <notfound />
+        }
+        else
+        {
+            <dl class="row">
+                <dt class="col-2">Name:</dt>
+                <dd class="col-10">@referenceDataDefinition.Name</dd>
+                <dt class="col-2">Description:</dt>
+                <dd class="col-10">@referenceDataDefinition.Description</dd>
+            </dl>
+        }
+    </div>
+    <div class="card-footer">
+        <button class="btn btn-primary" onclick="@Edit"><Icon Name="edit"></Icon> Edit</button>
+        <button class="btn btn-danger" onclick="@Delete"><Icon Name="trash"></Icon> Delete</button>
+    </div>
+</div>
+
+<div class="card mt-3">
+    <div class="card-header h2">
+        Fields
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-2">
+                <div><button class="btn btn-primary" onclick="@AddField"><Icon Name="plus"></Icon> Add</button></div>
+            </div>
+            <div class="col-10">
+                @if (loading)
+                {
+                    <loading></loading>
+                }
+                else if (referenceDataFieldDefinitions?.Any() != true)
+                {
+                    <text>No fields defined.</text>
+                }
+                else
+                {
+                    <div>
+                        @foreach (var field in referenceDataFieldDefinitions)
+                        {
+                            <div class="row" style="padding-top:5px;">
+                                <div class="col">
+                                    <div class="btn-group dropright">
+                                        <button type="button" class="btn btn-light dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            @field.Name
+                                        </button>
+                                        <Muted>@field.Description</Muted>
+                                        <div class="dropdown-menu">
+                                            <button type="button" class="dropdown-item" onclick="@(() => EditField(field))">
+                                                <Icon Name="pencil"></Icon> Edit
+                                            </button>
+                                            <button type="button" class="dropdown-item" onclick="@(() => DeleteField(field))">
+                                                <Icon Name="trash"></Icon> Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-3">
+    <div class="card-header h2">
+        <button class="btn btn-primary" onclick="@AddInstance"><Icon Name="plus"></Icon> Add</button>
+        Records
+    </div>
+    <div class="card-body">
+        @if (loading)
+        {
+            <loading />
+        }
+        else
+        {
+            <div class="list-group">
+                <div class="list-group-item">
+                    <div class="container">
+                        <div class="row">
+                            @foreach (var field in referenceDataFieldDefinitions)
+                            {
+                                <div class="col">@field.Name</div>
+                            }
+                            <div class="col-1"></div>
+                        </div>
+                    </div>
+                </div>
+                @if (referenceDataInstances?.Any() == true)
+                {
+                    @foreach (var referenceDataInstance in referenceDataInstances ?? Enumerable.Empty<ReferenceDataInstance>())
+                    {
+                        <div class="list-group-item list-group-item-action">
+                            <div class="container">
+                                <div class="row">
+                                    @foreach (var field in referenceDataFieldDefinitions)
+                                    {
+                                        <div class="col">@referenceDataInstance.ReferenceDataFieldInstances.FirstOrDefault(fieldInstance => fieldInstance.ReferenceDataFieldDefinitionId == field.Id)?.Value</div>
+                                    }
+                                    <div class="col-1">
+                                        <div class="btn-group dropleft">
+                                            <button type="button" class="btn btn-light dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            </button>
+                                            <div class="dropdown-menu">
+                                                <button type="button" class="dropdown-item" onclick="@(() => EditInstance(referenceDataInstance))">
+                                                    <Icon Name="pencil"></Icon> Edit
+                                                </button>
+                                                <button type="button" class="dropdown-item" onclick="@(() => DeleteInstance(referenceDataInstance))">
+                                                    <Icon Name="trash"></Icon> Delete
+                                                </button>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <NoItems></NoItems>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@functions {
+    private ReferenceDataDefinition referenceDataDefinition = new ReferenceDataDefinition();
+    private IEnumerable<ReferenceDataFieldDefinition> referenceDataFieldDefinitions = Enumerable.Empty<ReferenceDataFieldDefinition>();
+    private ReferenceDataFieldInstance[] referenceDataFieldInstances = new ReferenceDataFieldInstance[] { };
+    private ReferenceDataInstance[] referenceDataInstances = new ReferenceDataInstance[] { };
+    private bool loading = true;
+    private string ReturnPath = $"/referencedata/definition";
+
+    [Parameter]
+    private long id { get; set; }
+
+    protected override async Task OnInitAsync()
+    {
+        referenceDataDefinition = await Http.GetJsonAsync<ReferenceDataDefinition>($"{config.ApiUrl}/referencedata/definition/{id}");
+        referenceDataFieldDefinitions = await Http.GetJsonAsync<IEnumerable<ReferenceDataFieldDefinition>>($"{config.ApiUrl}/referencedata/definition/{id}/field");
+        referenceDataInstances = await Http.GetJsonAsync<ReferenceDataInstance[]>($"{config.ApiUrl}/referencedata/definition/{id}/instance");
+        referenceDataFieldInstances = await Http.GetJsonAsync<ReferenceDataFieldInstance[]>($"{config.ApiUrl}/referencedata/definition/{id}/instance/field");
+        foreach (var instance in referenceDataInstances)
+        {
+            instance.ReferenceDataFieldInstances = referenceDataFieldInstances.Where(field => field.ReferenceDataInstanceId == instance.Id).ToList();
+        }
+        loading = false;
+    }
+
+    private void Back()
+    {
+        UriHelper.NavigateTo(ReturnPath);
+    }
+
+    private void AddField()
+    {
+        UriHelper.NavigateTo($"/referencedata/definition/{id}/field/add");
+    }
+
+    private void AddInstance()
+    {
+        UriHelper.NavigateTo($"/referencedata/definition/{id}/instance/add");
+    }
+
+    private void DeleteInstance(ReferenceDataInstance instance)
+    {
+        UriHelper.NavigateTo($"/referencedata/definition/{id}/instance/{instance.Id}/delete");
+    }
+
+    private void EditInstance(ReferenceDataInstance instance)
+    {
+        UriHelper.NavigateTo($"/referencedata/definition/{id}/instance/{instance.Id}/edit");
+    }
+
+    private void DeleteField(ReferenceDataFieldDefinition field)
+    {
+        UriHelper.NavigateTo($"/referencedata/definition/{id}/field/{field.Id}/delete");
+    }
+
+    private void EditField(ReferenceDataFieldDefinition field)
+    {
+        UriHelper.NavigateTo($"/referencedata/definition/{id}/field/{field.Id}/edit");
+    }
+
+    private void Delete()
+    {
+        UriHelper.NavigateTo($"/referencedata/definition/{id}/delete");
+    }
+
+    private void Edit()
+    {
+        UriHelper.NavigateTo($"/referencedata/definition/{id}/edit");
+    }
+}

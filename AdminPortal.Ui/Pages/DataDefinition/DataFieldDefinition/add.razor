@@ -1,0 +1,77 @@
+﻿@page "/datadefinition/{dataDefinitionId:long}/datafielddefinition/add"
+@using AdminPortal.Entities
+@inject HttpClient Http
+@inject IApplicationConfiguration config
+@inject IUriHelper UriHelper
+
+<div class="card">
+    <div class="card-header">
+        <h1>
+            <button class="btn btn-light" onclick="@Back"><Icon IconName="@IconName.chevron_left"></Icon> Back</button>
+            Add Data Field Definition
+        </h1>
+    </div>
+    @if (loading)
+    {
+        <div class="card-body">
+            <loading></loading>
+        </div>
+    }
+    else if (dataFieldDefinition == null)
+    {
+        <div class="card-body h2">
+            Data field definition not found.
+        </div>
+    }
+    else
+    {
+        <EditForm Model="@dataFieldDefinition" OnValidSubmit="@Save">
+            <div class="card-body">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <InputText class="form-control" id="name" bind-Value="@dataFieldDefinition.Name" />
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <InputTextArea class="form-control" id="description" bind-Value="@dataFieldDefinition.Description" />
+                </div>
+                <div class="form-group">
+                    <label for="description">Can be one or more?</label>
+                    <InputCheckBox class="form-control" id="description" bind-Value="@dataFieldDefinition.IsArray" />
+                </div>
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-primary" type="submit">Save</button>
+            </div>
+        </EditForm>
+    }
+</div>
+
+@functions {
+    [Parameter]
+    public long Id { get; set; }
+
+    [Parameter]
+    public long dataDefinitionId { get; set; }
+
+    private bool loading = true;
+
+    private DataFieldDefinition dataFieldDefinition = new DataFieldDefinition();
+
+    protected override async Task OnInitAsync()
+    {
+        loading = false;
+    }
+
+    private void Back()
+        => UriHelper.NavigateTo($"/datadefinition/{dataDefinitionId}");
+
+    private async Task Save()
+    {
+        dataFieldDefinition.DataDefiniitionId = dataDefinitionId;
+        await Http.SendJsonAsync(HttpMethod.Post, $"{config.ApiUrl}/datadefinition/{dataDefinitionId}/datafielddefinition", dataFieldDefinition);
+        UriHelper.NavigateTo($"/datadefinition/{dataDefinitionId}");
+    }
+}

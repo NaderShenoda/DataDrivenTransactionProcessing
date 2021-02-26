@@ -1,0 +1,13 @@
+﻿<span 
+      class="@($"oi oi-{IconName.ToString().Replace("_", "-")}")" 
+      title="@($"{IconName.ToString().Replace("_", " ")}")" 
+      aria-hidden="true">
+</span>
+@ChildContent
+@functions {
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public IconName IconName { get; set; }
+}

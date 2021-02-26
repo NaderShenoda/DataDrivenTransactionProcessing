@@ -1,0 +1,90 @@
+﻿@using TransactionProcessor.Entities
+    <ul class="tree">
+        @if (DataDefinitions?.Any(definition => definition.ParentDataDefinitionId.HasValue) != true)
+        {
+            <li>No data fields defined.</li>
+        }
+        else
+        {
+            @if (Children(DataDefinition).Any())
+            {
+                @foreach (var dataDefinition in Children(DataDefinition))
+                {
+                    <li>
+                        @if (Children(dataDefinition).Any())
+                        {
+                            <span class="@ExpandedClass(dataDefinition)" onclick="@(() => SwapExpansion(dataDefinition))"></span>
+                        }
+                        <div class="btn-group dropright">
+                            <button type="button" class="btn btn-light dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                @dataDefinition.Name
+                            </button>
+                            <muted>@dataDefinition.Description</muted>
+                            <div class="dropdown-menu">
+                                <button type="button" class="dropdown-item" onclick="@(() => OnAddClick(dataDefinition))">
+                                    <icon Name="plus"></icon> Add Child
+                                </button>
+                                <button type="button" class="dropdown-item" onclick="@(() => OnEditClick(dataDefinition))">
+                                    <icon Name="pencil"></icon> Edit
+                                </button>
+                                <button type="button" class="dropdown-item" onclick="@(() => OnDeleteClick(dataDefinition))">
+                                    <icon Name="trash"></icon> Delete
+                                </button>
+                            </div>
+                        </div>
+                        @if (dataDefinition.IsArray)
+                        {
+                            <Pill Name="primary">One or More</Pill>
+                        }
+                        @if (Children(dataDefinition).Any() && Expanded(dataDefinition))
+                        {
+                            <DataDefinitionList DataDefinition="@dataDefinition" DataDefinitions="@DataDefinitions" Level="@NewLevel" OnAddClick="@OnAddClick" OnEditClick="@OnEditClick" OnDeleteClick="@OnDeleteClick" />
+                        }
+                    </li>
+                }
+            }
+        }
+    </ul>
+
+@functions {
+
+    [Parameter]
+    public Action<DataDefinition> OnAddClick { get; set; } = _ => { };
+
+    [Parameter]
+    public Action<DataDefinition> OnEditClick { get; set; } = _ => { };
+
+    [Parameter]
+    public Action<DataDefinition> OnDeleteClick { get; set; } = _ => { };
+
+    [Parameter]
+    public IEnumerable<DataDefinition> DataDefinitions { get; set; } = Enumerable.Empty<DataDefinition>();
+
+    [Parameter]
+    public DataDefinition DataDefinition { get; set; }
+
+    [Parameter]
+    public int Level { get; set; } = 0;
+
+    private IEnumerable<DataDefinition> Children(DataDefinition parent)
+        => DataDefinitions.Where(definition => definition.ParentDataDefinitionId.HasValue && definition.ParentDataDefinitionId == parent?.Id);
+
+    private string ExpandedClass(DataDefinition definition) 
+            => Expanded(definition) ? "oi oi-caret-bottom" : "oi oi-caret-right"; 
+
+    private int NewLevel { get => Level + 1; }
+
+    private IDictionary<DataDefinition, bool> ExpansionDictionary = new Dictionary<DataDefinition, bool>();
+
+    private bool Expanded(DataDefinition definition)
+    {
+        if (ExpansionDictionary.ContainsKey(definition))
+        {
+            return ExpansionDictionary[definition];
+        }
+        return true;
+    }
+
+    private void SwapExpansion(DataDefinition definition)
+        => ExpansionDictionary[definition] = !Expanded(definition);
+}

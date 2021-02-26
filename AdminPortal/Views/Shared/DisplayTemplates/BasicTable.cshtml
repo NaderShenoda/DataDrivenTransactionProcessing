@@ -1,0 +1,33 @@
+﻿@model AdminPortal.Models.BasicTable
+
+@{ var icon = Icon.chevron_right; }
+<div class="list-group">
+    <div class="list-group-item">
+        <div class="container">
+            <div class="row">
+                <div class="col-3">Name</div>
+                <div class="col">Description</div>
+                <div class="col-1"></div>
+            </div>
+        </div>
+    </div>
+    @if (Model?.Items?.Any() == true)
+    {
+        foreach (var item in Model.Items)
+        {
+            <a href="@item.DetailUrlAction(item)" class="list-group-item list-group-item-action">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-3">@item.Name</div>
+                        <div class="col"><small class="muted">@item.Description</small></div>
+                        <div class="col-1">@Html.DisplayFor(table  => icon)</div>
+                    </div>
+                </div>
+            </a>
+        }
+    }
+    else
+    {
+        <NoItems></NoItems>
+    }
+</div>

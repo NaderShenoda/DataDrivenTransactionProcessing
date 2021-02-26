@@ -1,0 +1,9 @@
+﻿@model BasicItem
+
+@section subheader
+{
+    <h1>
+        @Html.DisplayBackButton(Url.Action(nameof(DataDefinitionController.Detail), new { id = Model.Id }))
+        Edit Data Definition
+    </h1>
+}

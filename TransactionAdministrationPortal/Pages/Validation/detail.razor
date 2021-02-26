@@ -1,0 +1,95 @@
+﻿@page "/validation/{id:long}"
+@using TransactionProcessor.Entities
+@inject HttpClient Http
+@inject IApplicationConfiguration config
+@inject IUriHelper UriHelper
+
+<div class="card">
+    <div class="card-header h2">
+        <button class="btn btn-light" onclick="@Back"><span class="oi oi-chevron-left"></span> Back</button>
+        Validation Details
+    </div>
+    <div class="card-body">
+        @if (loading)
+        {
+            <loading></loading>
+        }
+        else
+        {
+            @if (dataDefinition == null)
+            {
+                <notfound />
+            }
+            else
+            {
+                <div class="row">
+                    <div class="col">
+                        <div class="btn-group dropright">
+                            <button type="button" class="btn btn-light dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                @dataDefinition.Name
+                            </button>
+                            <muted>@dataDefinition.Description</muted>
+                            <div class="dropdown-menu">
+                                <button type="button" class="dropdown-item" onclick="@(() => OnAddClick(dataDefinition))">
+                                    <icon Name="plus"></icon> Add Child
+                                </button>
+                                <button type="button" class="dropdown-item" onclick="@(() => OnEditClick(dataDefinition))">
+                                    <icon Name="pencil"></icon> Edit
+                                </button>
+                                <button type="button" class="dropdown-item" onclick="@(() => OnDeleteClick(dataDefinition))">
+                                    <icon Name="trash"></icon> Delete
+                                </button>
+                            </div>
+                        </div>
+                        @if (dataDefinition.IsArray)
+                        {
+                            <Pill Name="primary">One or More</Pill>
+                        }
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col ml-5">
+                        <DataDefinitionList DataDefinition="@dataDefinition" DataDefinitions="@dataDefinitions" OnAddClick="@OnAddClick" OnEditClick="@OnEditClick" OnDeleteClick="@OnDeleteClick" />
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@functions {
+    public void OnAddClick(DataDefinition dataDefinition)
+    {
+        UriHelper.NavigateTo($"/validation/{dataDefinition.MasterDataDefinitionId ?? dataDefinition.Id}/add/{dataDefinition?.Id}");
+    }
+
+    public void OnEditClick(DataDefinition dataDefinition)
+    {
+        UriHelper.NavigateTo($"/validation/{dataDefinition.MasterDataDefinitionId ?? dataDefinition.Id}/edit/{dataDefinition?.Id}");
+    }
+
+    public void OnDeleteClick(DataDefinition dataDefinition)
+    {
+        UriHelper.NavigateTo($"/validation/{dataDefinition.MasterDataDefinitionId ?? dataDefinition.Id}/delete/{dataDefinition?.Id}");
+    }
+
+    private DataDefinition dataDefinition = new DataDefinition();
+    private IEnumerable<DataDefinition> dataDefinitions = Enumerable.Empty<DataDefinition>();
+    private bool loading = true;
+    private string ReturnPath = $"/validation";
+
+    [Parameter]
+    private long id { get; set; }
+
+    protected override async Task OnInitAsync()
+    {
+        dataDefinitions = await Http.GetJsonAsync<IEnumerable<DataDefinition>>($"{config.ApiUrl}/datadefinition/{id}/master");
+        dataDefinition = dataDefinitions.FirstOrDefault(definition => !definition.MasterDataDefinitionId.HasValue);
+        loading = false;
+    }
+
+    private void Back()
+    {
+        UriHelper.NavigateTo(ReturnPath);
+    }
+}

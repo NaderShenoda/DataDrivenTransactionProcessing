@@ -1,0 +1,9 @@
+﻿<span class="@($"oi oi-{Name}")"></span>@ChildContent
+
+@functions {
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public string Name { get; set; }
+}

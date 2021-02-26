@@ -1,0 +1,11 @@
+﻿<span class="badge badge-primary badge-pill">@ChildContent</span>
+
+@functions {
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public string Name { get; set; }
+
+    private string CssClass { get => $"badge  badge-pill badge-{Name}"; }
+}

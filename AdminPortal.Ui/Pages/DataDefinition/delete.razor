@@ -1,0 +1,64 @@
+﻿@page "/datadefinition/{Id:long}/delete"
+@using AdminPortal.Entities
+@inject HttpClient Http
+@inject IApplicationConfiguration config
+@inject IUriHelper UriHelper
+
+<div class="card">
+    <div class="card-header">
+        <h1>
+            <button class="btn btn-light" onclick="@Back"><Icon IconName="@IconName.chevron_left"></Icon> Back</button>
+            Delete Data Definition
+        </h1>
+    </div>
+    @if (loading)
+    {
+        <div class="card-body">
+            <loading></loading>
+        </div>
+    }
+    else if (dataDefinition == null)
+    {
+        <div class="card-body h2">
+            Data definition not found.
+        </div>
+    }
+    else
+    {
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-2">Name</dt>
+                <dd class="col-10">@dataDefinition.Name</dd>
+                <dt class="col-2">Description</dt>
+                <dd class="col-10">@dataDefinition.Description</dd>
+            </dl>
+        </div>
+        <div class="card-footer">
+            <button class="btn btn-danger" onclick="@Delete"><Icon IconName="@IconName.trash"></Icon> Delete</button>
+        </div>
+    }
+</div>
+
+@functions {
+    [Parameter]
+    public long Id { get; set; }
+
+    private bool loading = true;
+
+    private DataDefinition dataDefinition;
+
+    protected override async Task OnInitAsync()
+    {
+        dataDefinition = await Http.GetJsonAsync<DataDefinition>($"{config.ApiUrl}/datadefinition/{Id}");
+        loading = false;
+    }
+
+    private void Back()
+        => UriHelper.NavigateTo($"/datadefinition/{Id}");
+
+    private async Task Delete()
+    {
+        await Http.DeleteAsync($"{config.ApiUrl}/datadefinition/{Id}");
+        UriHelper.NavigateTo($"/datadefinition");
+    }
+}
